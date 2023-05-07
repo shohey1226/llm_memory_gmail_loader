@@ -1,4 +1,4 @@
-# LlmMemoryGmailLoader
+# LLM Memory Gmail Loader
 
 TODO: Delete this and the text below, and describe your gem
 
