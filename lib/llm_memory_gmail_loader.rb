@@ -15,7 +15,7 @@ module LlmMemoryGmailLoader
   end
 
   def self.configure
-    self.configuration ||= Configuration.new
+    self.configuration = Configuration.new
     yield(configuration) if block_given?
   end
   configure # init for default values
@@ -39,19 +39,41 @@ module LlmMemoryGmailLoader
         "client_x509_cert_url" => "https://www.googleapis.com/robot/v1/metadata/x509/#{LlmMemoryGmailLoader.configuration.google_client_email}"
       }
 
-      authorizer = Google::Auth::ServiceAccountCredentials.make_creds(
+      Google::Auth::ServiceAccountCredentials.make_creds(
         json_key_io: StringIO.new(JSON.dump(key_content)),
-        scope: SCOPE
+        scope: Google::Apis::GmailV1::AUTH_GMAIL_READONLY
       )
-      authorizer.sub = "user@example.com" # Replace with the user's email address
-      authorizer
+      # authorizer.sub = "user@example.com" # Replace with the user's email address
     end
 
-    def load
-      {
-        content: "aa",
-        metatdata: {}
-      }
+    def list_emails(email)
+      @service.sub = email
+      query = "label:sent" # Fetch all sent emails
+      next_page_token = nil
+      sent_emails = []
+
+      loop do
+        result = @service.list_user_messages("me", q: query, page_token: next_page_token)
+        sent_emails.concat(result.messages) if result.messages
+
+        next_page_token = result.next_page_token
+        break if next_page_token.nil?
+      end
+
+      sent_emails
+    end
+
+    def load(args)
+      emails = args[:emails]      
+
+      @service ||= Google::Apis::GmailV1::GmailService.new
+      @service.authorization = authorize
+
+      results = []
+      emails.each do |email|
+        results += list_emails(email)
+      end
+      results
     end
   end
 end

@@ -16,6 +16,27 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
     $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
 
+## Setup
+
+### 1. Enable the Gmail API:
+
+1. Go to the Google API Console: https://console.developers.google.com/
+2. Create a new project or select an existing one.
+3. Click on "Enable APIs and Services" and search for "Gmail API".
+4. Enable the Gmail API for your project.
+
+### 2. Create credentials:
+
+1. In the API Console, go to the "Credentials" tab.
+2. Click on "Create credentials" and select "Service account".
+3. Fill in the required information and click "Create".
+4. Grant the necessary roles, such as "Google Workspace Domain-wide Delegation".
+5. Download the JSON key file for the service account.
+
+### 3. Delegate domain-wide authority to the service account:
+
+Follow the instructions in this guide to delegate domain-wide authority: https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority
+
 ## Usage
 
 TODO: Write usage instructions here
