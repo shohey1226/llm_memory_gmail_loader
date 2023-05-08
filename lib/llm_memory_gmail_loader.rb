@@ -2,6 +2,7 @@
 
 require "google/apis/gmail_v1"
 require "googleauth"
+require "nokogiri"
 
 require_relative "llm_memory_gmail_loader/version"
 require_relative "llm_memory_gmail_loader/configuration"
@@ -15,15 +16,18 @@ module LlmMemoryGmailLoader
   end
 
   def self.configure
-    self.configuration = Configuration.new
+    self.configuration ||= Configuration.new
     yield(configuration) if block_given?
   end
-  configure # init for default values
 
   class GmailLoader
     include LlmMemory::Loader
 
     register_loader :gmail
+
+    def initialize
+      LlmMemoryGmailLoader.configure
+    end
 
     def authorize
       key_content = {
@@ -47,7 +51,7 @@ module LlmMemoryGmailLoader
     end
 
     def list_emails(email)
-      @service.sub = email
+      @service.authorization.sub = email
       query = "label:sent" # Fetch all sent emails
       next_page_token = nil
       sent_emails = []
@@ -56,15 +60,75 @@ module LlmMemoryGmailLoader
         result = @service.list_user_messages("me", q: query, page_token: next_page_token)
         sent_emails.concat(result.messages) if result.messages
 
-        next_page_token = result.next_page_token
+        # next_page_token = result.next_page_token
         break if next_page_token.nil?
       end
 
       sent_emails
     end
 
+    def get_email_subject(headers)
+      subject_header = headers.find { |header| header.name == "Subject" }
+      subject_header&.value
+    end
+
+    def extract_email_bodies(payload)
+      if payload.mime_type == "text/plain" || payload.mime_type == "text/html"
+        {
+          text: (payload.mime_type == "text/plain") ? payload.body.data : nil,
+          html: (payload.mime_type == "text/html") ? payload.body.data : nil
+        }
+      elsif payload.mime_type.start_with?("multipart/")
+        text_body = nil
+        html_body = nil
+
+        payload.parts.each do |part|
+          if part.mime_type == "text/plain"
+            text_body = part.body.data
+          elsif part.mime_type == "text/html"
+            html_body = part.body.data
+          end
+        end
+
+        {
+          text: text_body,
+          html: html_body
+        }
+      else
+        {
+          text: nil,
+          html: nil
+        }
+      end
+    end
+
+    def print_email_details(emails)
+      emails.each do |email|
+        message = @service.get_user_message("me", email.id)
+        subject = get_email_subject(message.payload.headers)
+        bodies = extract_email_bodies(message.payload)
+
+        puts "Email ID: #{email.id}, Subject: #{subject}"
+        puts "Plain text body: #{bodies[:text]}" if bodies[:text]
+        puts "HTML body: #{extract_text_from_html(bodies[:html])}" if bodies[:html]    
+        puts "------------------------------------------------------"
+      end
+    end
+
+    def extract_text_from_html(html)
+      document = Nokogiri::HTML(html)
+      document.css('style').remove
+      document.css('br').each { |br| br.replace("\n") }
+      document.css('a').each do |a|
+        link = a['href']
+        text = a.text
+        a.replace("#{text} (#{link})") # Replace the <a> tag with its text content and link
+      end      
+      document.text.gsub(/　/," ").gsub(/\s+/, " ").strip
+    end
+
     def load(args)
-      emails = args[:emails]      
+      emails = args[:emails]
 
       @service ||= Google::Apis::GmailV1::GmailService.new
       @service.authorization = authorize
@@ -73,7 +137,8 @@ module LlmMemoryGmailLoader
       emails.each do |email|
         results += list_emails(email)
       end
-      results
+
+      print_email_details(results)
     end
   end
 end

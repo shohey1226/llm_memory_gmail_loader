@@ -45,6 +45,8 @@ GEM
     method_source (1.0.0)
     mini_mime (1.1.2)
     multi_json (1.15.0)
+    nokogiri (1.14.2-arm64-darwin)
+      racc (~> 1.4)
     os (1.1.4)
     parallel (1.23.0)
     parser (3.2.2.1)
@@ -53,6 +55,7 @@ GEM
       coderay (~> 1.1)
       method_source (~> 1.0)
     public_suffix (5.0.1)
+    racc (1.6.2)
     rainbow (3.1.1)
     rake (13.0.6)
     regexp_parser (2.8.0)
@@ -122,6 +125,7 @@ DEPENDENCIES
   googleauth
   llm_memory
   llm_memory_gmail_loader!
+  nokogiri
   pry
   rake (~> 13.0)
   rspec (~> 3.0)
