@@ -29,13 +29,13 @@ documents = LlmMemory::Wernicke.load(
               query: "label:sent",
               limit: 10
             )
-# {
+# [{
 #   content: "subject\nbody",
 #   metadata: {
 #     subject: subject,
 #     from: "xx@example.com"
 #   }
-# }
+# },,,]
 ```
 
 ## Prepare Auth keys
