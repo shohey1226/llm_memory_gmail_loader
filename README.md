@@ -1,8 +1,6 @@
 # LLM Memory Gmail Loader
 
-TODO: Delete this and the text below, and describe your gem
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/llm_memory_gmail_loader`. To experiment with that code, run `bin/console` for an interactive prompt.
+The LLM Memory Gmail Loader is a loader plugin designed for the `llm_memory` gem. It enables the retrieval of emails using the Gmail API. To use this plugin, please ensure you have the `llm_memory` gem installed.
 
 ## Installation
 
@@ -16,7 +14,26 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
     $ gem install UPDATE_WITH_YOUR_GEM_NAME_PRIOR_TO_RELEASE_TO_RUBYGEMS_ORG
 
-## Setup
+## Usage
+
+The following syntax is used to load emails:
+
+- `emails`: (required) An array of email addresses you want to retrieve.
+- `limit`: (optional) The maximum number of emails to retrieve for each email address. The default value is 100.
+- `query`: A text query to filter emails in Gmail. The default value is "label:sent"
+
+```ruby
+documents = LlmMemory::Wernicke.load(:gmail, emails: ["my@example.com"], query: "label:sent", limit: 10)
+# {
+#   content: "subject\nbody",
+#   metadata: {
+#     subject: subject,
+#     from: "xx@example.com"
+#   }
+# }
+```
+
+## Prepare Auth keys
 
 ### 1. Enable the Gmail API:
 
@@ -37,9 +54,32 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 Follow the instructions in this guide to delegate domain-wide authority: https://developers.google.com/identity/protocols/oauth2/service-account#delegatingauthority
 
-## Usage
+## Configuration
 
-TODO: Write usage instructions here
+To configure the Gmail Loader, you'll need to set up an initializer. By default, it uses the following environment variables:
+
+```
+GOOGLE_PROJECT_ID
+GOOGLE_PRIVATE_KEY_ID
+GOOGLE_PRIVATE_KEY
+GOOGLE_CLIENT_EMAIL
+GOOGLE_CLIENT_ID
+```
+
+### Setting up the Gmail Loader
+
+1. Download the service account JSON file and copy the keys.
+2. Add the following configuration block in your initializer:
+
+```ruby
+LlmMemoryGmailLoader.configure do |config|
+  config.google_project_id = "<your_google_project_id>"
+  config.google_private_key_id = "<your_google_private_key_id>"
+  config.google_private_key = "<your_google_private_key>"
+  config.google_client_email = "<your_google_client_email>"
+  config.google_client_id = "<your_google_client_id>"
+end
+```
 
 ## Development
 

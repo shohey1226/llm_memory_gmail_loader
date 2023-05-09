@@ -50,9 +50,8 @@ module LlmMemoryGmailLoader
       # authorizer.sub = "user@example.com" # Replace with the user's email address
     end
 
-    def list_emails(email:, limit: 100)
+    def list_emails(email:, limit: 100, query: "label:sent")
       @service.authorization.sub = email
-      query = "label:sent" # Fetch all sent emails
       next_page_token = nil
       sent_emails = []
       count = 0
@@ -61,12 +60,10 @@ module LlmMemoryGmailLoader
         result = @service.list_user_messages("me", q: query, page_token: next_page_token, max_results: max_results)
         sent_emails.concat(result.messages) if result.messages
         count += result.messages.length
-
         next_page_token = result.next_page_token
         break if next_page_token.nil?
         break if count > limit
       end
-
       sent_emails
     end
 
