@@ -23,7 +23,12 @@ The following syntax is used to load emails:
 - `query`: A text query to filter emails in Gmail. The default value is "label:sent"
 
 ```ruby
-documents = LlmMemory::Wernicke.load(:gmail, emails: ["my@example.com"], query: "label:sent", limit: 10)
+documents = LlmMemory::Wernicke.load(
+              :gmail,
+              emails: ["my@example.com"],
+              query: "label:sent",
+              limit: 10
+            )
 # {
 #   content: "subject\nbody",
 #   metadata: {
