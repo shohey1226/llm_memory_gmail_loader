@@ -81,6 +81,15 @@ module LlmMemoryGmailLoader
       end
     end
 
+    def get_email_date(headers)
+      date_header = headers.find { |header| header.name == "Date" }
+      if date_header
+        Time.parse(date_header.value).strftime("%Y%m%d%H%M%S")
+      else
+        ""
+      end
+    end
+
     def extract_email_bodies(payload)
       if payload.mime_type == "text/plain" || payload.mime_type == "text/html"
         {
@@ -130,6 +139,7 @@ module LlmMemoryGmailLoader
         message = @service.get_user_message("me", email.id)
         subject = get_email_subject(message.payload.headers)
         from = get_email_from(message.payload.headers)
+        timestamp = get_email_date(message.payload.headers)
         bodies = extract_email_bodies(message.payload)
         if bodies[:text]
           body = bodies[:text].force_encoding("UTF-8").gsub(/　/, " ").gsub(/\s+/, " ").strip
@@ -143,7 +153,8 @@ module LlmMemoryGmailLoader
           content: "#{subject}\n#{body}",
           metadata: {
             subject: subject,
-            from: from
+            from: from,
+            timestamp: timestamp
           }
         })
       end
