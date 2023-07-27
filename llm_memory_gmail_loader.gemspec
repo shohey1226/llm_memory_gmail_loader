@@ -34,6 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "googleauth", "~> 1.5.2"
   spec.add_dependency "google-apis-gmail_v1", "~> 0.27.0"
   spec.add_dependency "nokogiri", "~> 1.14.0"
+  spec.add_dependency "llm_memory", "~> 0.1.12"  
 
   # For more information and examples about making a new gem, check out our
   # guide at: https://bundler.io/guides/creating_gem.html
