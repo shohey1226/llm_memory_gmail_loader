@@ -31,7 +31,8 @@ documents = LlmMemory::Wernicke.load(
 #   content: "subject\nbody",
 #   metadata: {
 #     subject: subject,
-#     from: "xx@example.com"
+#     from: "xx@example.com",
+#     timestamp: "20230725025555" # YYYYMMDDHHmmss
 #   }
 # },,,]
 ```
