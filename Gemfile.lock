@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    llm_memory_gmail_loader (0.1.5)
+    llm_memory_gmail_loader (0.1.6)
       google-apis-gmail_v1 (~> 0.27.0)
       googleauth (>= 0.17)
       nokogiri (~> 1.14.0)
