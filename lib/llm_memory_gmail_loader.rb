@@ -50,7 +50,9 @@ module LlmMemoryGmailLoader
       # authorizer.sub = "user@example.com" # Replace with the user's email address
     end
 
-    def list_emails(email:, limit: 100, query: "label:sent")
+    def list_emails(email:, limit: nil, query: nil)
+      limit ||= 100
+      query ||= "label:sent"
       @service.authorization.sub = email
       next_page_token = nil
       sent_emails = []
@@ -58,6 +60,7 @@ module LlmMemoryGmailLoader
       max_results = (limit < 100) ? limit : 100
       loop do
         result = @service.list_user_messages("me", q: query, page_token: next_page_token, max_results: max_results)
+        break if result.messages.nil?
         sent_emails.concat(result.messages) if result.messages
         count += result.messages.length
         next_page_token = result.next_page_token
@@ -164,6 +167,7 @@ module LlmMemoryGmailLoader
     def load(args)
       emails = args[:emails]
       limit = args[:limit]
+      query = args[:query]
       raise "emails is required" if emails.nil? || emails.length == 0
 
       @service ||= Google::Apis::GmailV1::GmailService.new
@@ -171,11 +175,7 @@ module LlmMemoryGmailLoader
 
       results = []
       emails.each do |email|
-        results += if limit.nil?
-          list_emails(email: email)
-        else
-          list_emails(email: email, limit: limit)
-        end
+        results += list_emails(email: email, limit: limit, query: query)
       end
 
       create_documents(results)
